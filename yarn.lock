@@ -512,7 +512,7 @@
     "@aws-cdk/region-info" "1.79.0"
     constructs "^3.2.0"
 
-"@aws-cdk/aws-route53@1.79.0":
+"@aws-cdk/aws-route53@1.79.0", "@aws-cdk/aws-route53@^1.78.0":
   version "1.79.0"
   resolved "https://registry.yarnpkg.com/@aws-cdk/aws-route53/-/aws-route53-1.79.0.tgz#877e568089f397989f0be59e7eb57742e9f03399"
   integrity sha512-IJ32fcC6l1aKhI46wGH7HMUBRMQi8R8Cy9re3kmY4cVdAAfh8UJhIdr8jpaLs2iU0mrJPc4R0tHiCka4aNo2dQ==
@@ -5548,10 +5548,10 @@ progress@^2.0.0:
   resolved "https://registry.yarnpkg.com/progress/-/progress-2.0.3.tgz#7e8cf8d8f5b8f239c1bc68beb4eb78567d572ef8"
   integrity sha512-7PiHtLll5LdnKIMw100I+8xJXR5gW2QwWYkT6iJva0bXitZKa/XMrSbdmg3r2Xnaidz9Qumd0VPaMrZlF9V9sA==
 
-projen@^0.6.16:
-  version "0.6.16"
-  resolved "https://registry.yarnpkg.com/projen/-/projen-0.6.16.tgz#f3c72b52fe6048665bd285785aad72f512116e69"
-  integrity sha512-Gz7HepmYxSxX4RXOErPa8/CmXsh/vku82wWuE2pKaTUVKvH2trDCjptT3S1R0tzx5J/IUJ1LO+LRSpiKxJ5RDg==
+projen@^0.6.10:
+  version "0.6.17"
+  resolved "https://registry.yarnpkg.com/projen/-/projen-0.6.17.tgz#6102813cbc5a212454c556db20e1827b553f882e"
+  integrity sha512-qZxXVG1yLdTuJ6y+dEp7b7eOfBat0Mod5+jRggx7aE0vtIbrhqL524wLq7bKpsAK1LaPAOObs5skW/xRv/Jvmg==
   dependencies:
     "@iarna/toml" "^2.2.5"
     chalk "^4.1.0"
