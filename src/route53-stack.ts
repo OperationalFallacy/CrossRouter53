@@ -1,6 +1,6 @@
 
 import { PublicHostedZone } from '@aws-cdk/aws-route53';
-import { Stack, Construct, StackProps, CfnOutput, Token } from '@aws-cdk/core';
+import { Stack, Fn, Construct, StackProps, CfnOutput } from '@aws-cdk/core';
 
 export class stackSettings {
   readonly stacksettings?: {
@@ -19,8 +19,12 @@ export class Route53Stack extends Stack {
       zoneName: stackconfig?.stacksettings?.environment + '.naumenko.ca',
     });
 
-    this.ZoneInfo = new CfnOutput(this, 'ZoneInfo', {
-      value: Token.asString(zone.hostedZoneNameServers )
+    this.ZoneInfo = new CfnOutput(this, 'ZoneNameServers', {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      value: JSON.stringify(zone.hostedZoneNameServers?.join(",")),
+      description: 'Hosted zone Name Servers for zone: ' + zone.zoneName
     });
+
+    // delegation https://github.com/cdk-cosmos/cosmos/blob/ef87c03ab52ca38d01a99fea2211e03eb0d04ad9/packages/%40cdk-cosmos/core/src/features/domain-feature/subdomain-feature-stack.ts
   }
 }
