@@ -2,7 +2,7 @@
 import { Construct, Stage, StageProps, CfnOutput } from '@aws-cdk/core';
 import { Route53Stack, stackSettings } from './route53-stack';
 
-export class AppStage extends Stage {
+export class PipelineStage extends Stage {
   public readonly ZoneInfo: CfnOutput;
 
   constructor(scope: Construct, id: string, props: StageProps, stackconfig: stackSettings) {
