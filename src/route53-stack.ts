@@ -1,6 +1,6 @@
 
 import { PublicHostedZone } from '@aws-cdk/aws-route53';
-import { Stack, Construct, StackProps, CfnOutput } from '@aws-cdk/core';
+import { Stack, Construct, StackProps, CfnOutput, Token } from '@aws-cdk/core';
 
 export class stackSettings {
   readonly stacksettings?: {
@@ -20,9 +20,7 @@ export class Route53Stack extends Stack {
     });
 
     this.ZoneInfo = new CfnOutput(this, 'ZoneInfo', {
-      value: zone.hostedZoneNameServers ? zone.hostedZoneNameServers.toString() : 'UNDEFINED'
-
+      value: Token.asString(zone.hostedZoneNameServers )
     });
-
   }
 }
