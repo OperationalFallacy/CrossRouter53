@@ -1,6 +1,6 @@
 
 import { PublicHostedZone } from '@aws-cdk/aws-route53';
-import { Stack, Fn, Construct, StackProps, CfnOutput } from '@aws-cdk/core';
+import { Stack, Construct, Fn, StackProps, CfnOutput } from '@aws-cdk/core';
 
 export class stackSettings {
   readonly stacksettings?: {
@@ -21,7 +21,7 @@ export class Route53Stack extends Stack {
 
     this.ZoneInfo = new CfnOutput(this, 'ZoneNameServers', {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      value: JSON.stringify(zone.hostedZoneNameServers?.join(",")),
+      value: Fn.join(", ", zone.hostedZoneNameServers!),
       description: 'Hosted zone Name Servers for zone: ' + zone.zoneName
     });
 
