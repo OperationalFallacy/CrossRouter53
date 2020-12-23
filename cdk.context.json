@@ -1,1 +1,6 @@
-{}
+{
+  "hosted-zone:account=208334959160:domainName=naumenko.ca:region=us-east-1": {
+    "Id": "/hostedzone/Z13DSS2EHP77UM",
+    "Name": "naumenko.ca."
+  }
+}

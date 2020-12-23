@@ -10,7 +10,6 @@ export interface PipelineStackProps extends cdk.StackProps {
 }
 
 export class PipelineStack extends cdk.Stack {
-  public readonly pipeline: CdkPipeline;
 
   constructor(scope: cdk.Construct, id: string, props: PipelineStackProps) {
     super(scope, id, props);
@@ -18,7 +17,7 @@ export class PipelineStack extends cdk.Stack {
     const sourceArtifact = new codepipeline.Artifact();
     const cloudAssemblyArtifact = new codepipeline.Artifact();
 
-    this.pipeline = new CdkPipeline(this, 'Pipeline', {
+    const pipeline = new CdkPipeline(this, 'Pipeline', {
       pipelineName: `${props.name}-DeliveryPipeline`,
       cloudAssemblyArtifact,
       sourceAction: new actions.GitHubSourceAction({
@@ -62,7 +61,9 @@ export class PipelineStack extends cdk.Stack {
     })
 
     // This is where we add the application stages - it should be branch-based perhaps
-    const devstage = new PipelineStage(this, 'CreateDevSubDomain', {
+    const CreateSubDomains = pipeline.addStage('CreateSubDomains');
+
+    const devapp = new PipelineStage(this, 'CreateDevSubDomain', {
       env: { 
         region: 'us-east-1',
         account: '164411640669' 
@@ -75,10 +76,10 @@ export class PipelineStack extends cdk.Stack {
       }
     });
 
-    const prodstage = new PipelineStage(this, 'CreateProdSubDomain', {
+    const prodapp = new PipelineStage(this, 'CreateProdSubDomain', {
       env: { 
         region: 'us-east-1',
-        account: '936281978805' 
+        account: '116907314417' 
       }
     },
     {
@@ -88,10 +89,30 @@ export class PipelineStack extends cdk.Stack {
       }
     });
 
-    
-    this.pipeline.addApplicationStage(devstage);
-    this.pipeline.addApplicationStage(prodstage);
+    // function RunNextActionInParallel(s: CdkStage) {
+    //   const currentRunOrder = s.nextSequentialRunOrder(0)
+    //   s.nextSequentialRunOrder(1-currentRunOrder)
+    // }
 
+    CreateSubDomains.addApplication(devapp);
+   // RunNextActionInParallel(ds)
+    
+
+    CreateSubDomains.addApplication(prodapp);
+   // RunNextActionInParallel(ps)
+
+    
+    // prodstage.
+    // def _run_next_action_in_parallel(stage: Stage):
+    // current_run_order = stage.next_sequential_run_order(0)  # passing 0 means it doesn't advance the run oder
+    // stage.next_sequential_run_order(1 - current_run_order)  # send the order back to 1 so the next stage runs in parallel
+    
+    
+    //   stage.add_application(EpsRoute53(self, f"dev01-route53", env=environments["dev01"], account_identifier="dev01"))
+    //   _run_next_action_in_parallel(stage)
+    //   stage.add_application(EpsRoute53(self, f"dev02-route53", env=environments["dev02"], account_identifier="dev02"))
+    //   _run_next_action_in_parallel(stage)
+    
     // const policy = new PolicyStatement({ 
     //   actions: [ "s3:ListAllMyBuckets" ],
     //   resources: [ "arn:aws:s3:::*" ]
@@ -113,7 +134,7 @@ export class PipelineStack extends cdk.Stack {
 
     // deploydev.addActions(comboAction);
 
-    this.pipeline.addApplicationStage(new PipelineStage(this, 'UpdateTLDZoneDelegation', {
+    pipeline.addApplicationStage(new PipelineStage(this, 'UpdateTLDZoneDelegation', {
       env: { 
         region: 'us-east-1',
         account: '208334959160'
@@ -122,7 +143,7 @@ export class PipelineStack extends cdk.Stack {
     {
       stacksettings: {
         environment: 'root',
-        hostedZone: this.pipeline.stackOutput(devstage.ZoneInfo).outputName.toString()
+        hostedZone: pipeline.stackOutput(devapp.ZoneInfo).outputName.toString()
       }
     }));
 
