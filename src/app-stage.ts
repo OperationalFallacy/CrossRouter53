@@ -1,6 +1,6 @@
 
 import { Construct, Stage, StageProps, CfnOutput } from '@aws-cdk/core';
-import { Route53Stack, stackSettings } from './route53-stack';
+import { Route53Stack, stackSettings } from './route53-subdomains';
 
 export class PipelineStage extends Stage {
   public readonly ZoneInfo: CfnOutput;

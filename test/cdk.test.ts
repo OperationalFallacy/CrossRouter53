@@ -1,7 +1,7 @@
 import { SynthUtils } from '@aws-cdk/assert';
 import { App } from '@aws-cdk/core';
 
-import { Route53Stack } from '../src/route53-stack';
+import { Route53Stack } from '../src/route53-subdomains';
 
 test('stack', () => {
   const app = new App();

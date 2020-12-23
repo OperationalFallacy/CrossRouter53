@@ -2,9 +2,8 @@
 import * as codepipeline from '@aws-cdk/aws-codepipeline';
 import * as actions from '@aws-cdk/aws-codepipeline-actions';
 import * as cdk from '@aws-cdk/core';
-import { ShellScriptAction, CdkPipeline, SimpleSynthAction } from '@aws-cdk/pipelines';
+import { CdkPipeline, SimpleSynthAction } from '@aws-cdk/pipelines';
 import { PipelineStage } from './app-stage';
-import { PolicyStatement } from "@aws-cdk/aws-iam"
 
 export interface PipelineStackProps extends cdk.StackProps {
   name: string;
@@ -31,6 +30,28 @@ export class PipelineStack extends cdk.Stack {
         repo: 'CrossRouter53',
         branch: 'delegated_zone',
       }),
+
+        // Found a workaround to add environment_variables inside environment instead of directly into SimpleSynthAction
+
+        // synth_action = pipelines.SimpleSynthAction(
+        //             source_artifact=source_artifact,
+        //             environment={
+        //                 'privileged': True,
+        //                 'environment_variables': {
+        //                    'DOCKER_PASSWORD': aws_codebuild.BuildEnvironmentVariable(
+        //                        value='DOCKERHUB_PASSWORD',
+        //                       type=aws_codebuild.BuildEnvironmentVariableType.SECRETS_MANAGER)
+        //                   }
+        //             },
+        //             cloud_assembly_artifact=cloud_assembly_artifact,
+        //             install_commands=[
+        //                 'npm install -g aws-cdk',
+        //                 'pip install -r requirements.txt',
+        //                 'docker login -u $DOCKER_LOGIN -p $DOCKER_PASSWORD'
+        //             ],
+        //             synth_command='cdk synth'
+        //         )
+
       synthAction: SimpleSynthAction.standardYarnSynth({
         sourceArtifact,
         cloudAssemblyArtifact,
@@ -41,41 +62,67 @@ export class PipelineStack extends cdk.Stack {
     })
 
     // This is where we add the application stages - it should be branch-based perhaps
-    const devstage = new PipelineStage(this, 'CreateSubDomain', {
-      env: { region: 'us-east-1' }
+    const devstage = new PipelineStage(this, 'CreateDevSubDomain', {
+      env: { 
+        region: 'us-east-1',
+        account: '164411640669' 
+      }
     },
     {
       stacksettings: {
-        environment: 'dev'
+        environment: 'dev',
+        hostedZone: undefined
       }
     });
- 
-    const deploydev = this.pipeline.addApplicationStage(devstage);
 
-    const policy = new PolicyStatement({ 
-      actions: [ "s3:ListAllMyBuckets" ],
-      resources: [ "arn:aws:s3:::*" ]
-    });
-
-    deploydev.addActions(new ShellScriptAction({
-      actionName: 'TestInfra',
-      rolePolicyStatements: [ policy ],
-      useOutputs: {
-        // Get the stack Output from the Stage and make it available in
-        // the shell script as $ZoneInfo
-        ZONE_INFO: this.pipeline.stackOutput(devstage.ZoneInfo),
-      },
-      commands: [
-        'echo $ZONE_INFO',
-      ],
-    }));
-
-    this.pipeline.addApplicationStage(new PipelineStage(this, 'UpdateTLDZoneDelegation', {
-      env: { region: 'us-east-1' }
+    const prodstage = new PipelineStage(this, 'CreateProdSubDomain', {
+      env: { 
+        region: 'us-east-1',
+        account: '936281978805' 
+      }
     },
     {
       stacksettings: {
-        environment: 'root'
+        environment: 'prod',
+        hostedZone: undefined
+      }
+    });
+
+    
+    this.pipeline.addApplicationStage(devstage);
+    this.pipeline.addApplicationStage(prodstage);
+
+    // const policy = new PolicyStatement({ 
+    //   actions: [ "s3:ListAllMyBuckets" ],
+    //   resources: [ "arn:aws:s3:::*" ]
+    // });
+
+    // const comboAction = new ShellScriptAction({
+    //   actionName: 'TestInfra',
+    //   rolePolicyStatements: [ policy ],
+    //   useOutputs: {
+    //     // Get the stack Output from the Stage and make it available in
+    //     // the shell script as $ZoneInfo
+    //     ZONE_INFO: this.pipeline.stackOutput(devstage.ZoneInfo),
+    //   },
+    //   commands: [
+    //     'echo $ZONE_INFO',
+    //     'export ZONE_INFO_'
+    //   ],
+    // })
+
+    // deploydev.addActions(comboAction);
+
+    this.pipeline.addApplicationStage(new PipelineStage(this, 'UpdateTLDZoneDelegation', {
+      env: { 
+        region: 'us-east-1',
+        account: '208334959160'
+      }
+    },
+    {
+      stacksettings: {
+        environment: 'root',
+        hostedZone: this.pipeline.stackOutput(devstage.ZoneInfo).outputName.toString()
       }
     }));
 
