@@ -2,7 +2,7 @@
 import * as codepipeline from '@aws-cdk/aws-codepipeline';
 import * as actions from '@aws-cdk/aws-codepipeline-actions';
 import * as cdk from '@aws-cdk/core';
-import { CdkPipeline, SimpleSynthAction } from '@aws-cdk/pipelines';
+import { CdkPipeline, CdkStage, ShellScriptAction, SimpleSynthAction } from '@aws-cdk/pipelines';
 import { PipelineStage } from './app-stage';
 
 export interface PipelineStackProps extends cdk.StackProps {
@@ -29,27 +29,6 @@ export class PipelineStack extends cdk.Stack {
         repo: 'CrossRouter53',
         branch: 'delegated_zone',
       }),
-
-        // Found a workaround to add environment_variables inside environment instead of directly into SimpleSynthAction
-
-        // synth_action = pipelines.SimpleSynthAction(
-        //             source_artifact=source_artifact,
-        //             environment={
-        //                 'privileged': True,
-        //                 'environment_variables': {
-        //                    'DOCKER_PASSWORD': aws_codebuild.BuildEnvironmentVariable(
-        //                        value='DOCKERHUB_PASSWORD',
-        //                       type=aws_codebuild.BuildEnvironmentVariableType.SECRETS_MANAGER)
-        //                   }
-        //             },
-        //             cloud_assembly_artifact=cloud_assembly_artifact,
-        //             install_commands=[
-        //                 'npm install -g aws-cdk',
-        //                 'pip install -r requirements.txt',
-        //                 'docker login -u $DOCKER_LOGIN -p $DOCKER_PASSWORD'
-        //             ],
-        //             synth_command='cdk synth'
-        //         )
 
       synthAction: SimpleSynthAction.standardYarnSynth({
         sourceArtifact,
@@ -88,52 +67,34 @@ export class PipelineStack extends cdk.Stack {
         hostedZone: undefined
       }
     });
-
-    // function RunNextActionInParallel(s: CdkStage) {
-    //   const currentRunOrder = s.nextSequentialRunOrder(0)
-    //   s.nextSequentialRunOrder(1-currentRunOrder)
-    // }
+    
+    function RunNextActionInParallel(s: CdkStage) {
+      let currentRunOrder = s.nextSequentialRunOrder(0)
+      s.nextSequentialRunOrder(1-currentRunOrder)
+    }
 
     CreateSubDomains.addApplication(devapp);
-   // RunNextActionInParallel(ds)
-    
-
+    RunNextActionInParallel(CreateSubDomains);
     CreateSubDomains.addApplication(prodapp);
-   // RunNextActionInParallel(ps)
+    RunNextActionInParallel(CreateSubDomains);
 
-    
-    // prodstage.
-    // def _run_next_action_in_parallel(stage: Stage):
-    // current_run_order = stage.next_sequential_run_order(0)  # passing 0 means it doesn't advance the run oder
-    // stage.next_sequential_run_order(1 - current_run_order)  # send the order back to 1 so the next stage runs in parallel
-    
-    
-    //   stage.add_application(EpsRoute53(self, f"dev01-route53", env=environments["dev01"], account_identifier="dev01"))
-    //   _run_next_action_in_parallel(stage)
-    //   stage.add_application(EpsRoute53(self, f"dev02-route53", env=environments["dev02"], account_identifier="dev02"))
-    //   _run_next_action_in_parallel(stage)
-    
-    // const policy = new PolicyStatement({ 
-    //   actions: [ "s3:ListAllMyBuckets" ],
-    //   resources: [ "arn:aws:s3:::*" ]
-    // });
+    const comboAction = new ShellScriptAction({
+      actionName: 'TestInfra',
+      useOutputs: {
+        // Get the stack Output from the Stage and make it available in
+        // the shell script as $ZoneInfo
+        DEV_ZONE_INFO: pipeline.stackOutput(devapp.ZoneInfo),
+        PROD_ZONE_INFO: pipeline.stackOutput(prodapp.ZoneInfo)
+      },
+      commands: [
+        'ls -alR',
+        'env',
+        'echo $DEV_ZONE_INFO $PROD_ZONE_INFO'
+      ]
+    })
 
-    // const comboAction = new ShellScriptAction({
-    //   actionName: 'TestInfra',
-    //   rolePolicyStatements: [ policy ],
-    //   useOutputs: {
-    //     // Get the stack Output from the Stage and make it available in
-    //     // the shell script as $ZoneInfo
-    //     ZONE_INFO: this.pipeline.stackOutput(devstage.ZoneInfo),
-    //   },
-    //   commands: [
-    //     'echo $ZONE_INFO',
-    //     'export ZONE_INFO_'
-    //   ],
-    // })
-
-    // deploydev.addActions(comboAction);
-
+    CreateSubDomains.addActions(comboAction);
+    
     pipeline.addApplicationStage(new PipelineStage(this, 'UpdateTLDZoneDelegation', {
       env: { 
         region: 'us-east-1',
