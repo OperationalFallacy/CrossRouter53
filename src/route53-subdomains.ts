@@ -1,6 +1,6 @@
 
-import { HostedZone, PublicHostedZone, ZoneDelegationRecord } from '@aws-cdk/aws-route53';
-import { Stack, Construct, StackProps, CfnOutput, Duration } from '@aws-cdk/core';
+import { PublicHostedZone } from '@aws-cdk/aws-route53';
+import { Stack, Construct, StackProps, CfnOutput } from '@aws-cdk/core';
  
 export class stackSettings {
   readonly stacksettings?: {
