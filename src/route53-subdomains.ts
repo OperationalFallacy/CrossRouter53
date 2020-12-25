@@ -1,5 +1,5 @@
 
-import { HostedZone, ZoneDelegationRecord } from '@aws-cdk/aws-route53';
+import { HostedZone, PublicHostedZone, ZoneDelegationRecord } from '@aws-cdk/aws-route53';
 import { Stack, Construct, StackProps, CfnOutput, Duration } from '@aws-cdk/core';
  
 export class stackSettings {
@@ -15,22 +15,14 @@ export class Route53Stack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps, stackconfig?: stackSettings) {
     super(scope, id, props);
     
-    const rootZone =  HostedZone.fromLookup(this, 'Zone', { 
-      domainName: 'naumenko.ca' 
-    })
-    let zone_info = stackconfig?.stacksettings?.environment!
-
-    const delegationRecord = new ZoneDelegationRecord(this, 'delegated', {
-      zone: rootZone,
-      recordName: zone_info,
-      nameServers: [ zone_info ],
-      ttl: Duration.minutes(120),
-      comment: 'Delegation for zone: ' + zone_info
+    const zone = new PublicHostedZone(this, stackconfig?.stacksettings?.hostedZone!, {
+      zoneName: stackconfig?.stacksettings?.environment!,
+      comment: 'Hosted zone for ' + stackconfig?.stacksettings?.environment!
     });
 
     this.ZoneInfo = new CfnOutput(this, 'ZoneNameServers', {
-      value: zone_info,
-      description: 'Delegation record for zone: ' + delegationRecord.domainName
+      value: JSON.stringify(zone.hostedZoneNameServers?.join(",")),
+      description: 'Delegation record for zone: ' + stackconfig?.stacksettings?.hostedZone!
     });
   }
 }
