@@ -8,7 +8,7 @@ const project = new AwsCdkTypeScriptApp({
   description: 'CDK application to create cross account Route53 delegated zones',
   keywords: ['cdk', 'dns', 'route53'],
   cdkVersion: '1.78.0',
-  cdkDependencies: ['@aws-cdk/aws-iam', '@aws-cdk/aws-iam', '@aws-cdk/pipelines', '@aws-cdk/aws-route53', '@aws-cdk/aws-codepipeline-actions', '@aws-cdk/aws-codepipeline'],
+  cdkDependencies: ['@aws-cdk/aws-iam', '@aws-cdk/aws-datapipeline', '@aws-cdk/aws-iam', '@aws-cdk/pipelines', '@aws-cdk/aws-route53', '@aws-cdk/aws-codepipeline-actions', '@aws-cdk/aws-codepipeline'],
   cdkTestDependencies: ['@aws-cdk/assert'],
   gitignore: ['__snapshots__', 'LICENSE'],
   rebuildBot: false,

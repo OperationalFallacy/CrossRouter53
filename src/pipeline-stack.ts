@@ -2,8 +2,10 @@
 import * as codepipeline from '@aws-cdk/aws-codepipeline';
 import * as actions from '@aws-cdk/aws-codepipeline-actions';
 import * as cdk from '@aws-cdk/core';
-import { CdkPipeline, CdkStage, ShellScriptAction, SimpleSynthAction } from '@aws-cdk/pipelines';
-import { PipelineStage } from './app-stage';
+import { CdkPipeline, CdkStage, SimpleSynthAction } from '@aws-cdk/pipelines';
+import { SubdomainStage, DelegationStage } from './app-stages';
+import { PipelineProject, BuildSpec, LinuxBuildImage} from '@aws-cdk/aws-codebuild'
+import { CfnPipeline } from '@aws-cdk/aws-datapipeline'
 
 export interface PipelineStackProps extends cdk.StackProps {
   name: string;
@@ -13,9 +15,10 @@ export class PipelineStack extends cdk.Stack {
 
   constructor(scope: cdk.Construct, id: string, props: PipelineStackProps) {
     super(scope, id, props);
-
+    
     const sourceArtifact = new codepipeline.Artifact();
     const cloudAssemblyArtifact = new codepipeline.Artifact();
+    const cloudAssemblyArtifactUpdated = new codepipeline.Artifact();
 
     const pipeline = new CdkPipeline(this, 'Pipeline', {
       pipelineName: `${props.name}-DeliveryPipeline`,
@@ -42,7 +45,7 @@ export class PipelineStack extends cdk.Stack {
     // This is where we add the application stages - it should be branch-based perhaps
     const CreateSubDomains = pipeline.addStage('CreateSubDomains');
 
-    const devapp = new PipelineStage(this, 'CreateDevSubDomain', {
+    const devapp = new SubdomainStage(this, 'CreateDevSubDomain', {
       env: { 
         region: 'us-east-1',
         account: '164411640669' 
@@ -50,12 +53,11 @@ export class PipelineStack extends cdk.Stack {
     },
     {
       stacksettings: {
-        environment: 'dev',
-        hostedZone: undefined
+        environment: 'dev'
       }
     });
 
-    const prodapp = new PipelineStage(this, 'CreateProdSubDomain', {
+    const prodapp = new SubdomainStage(this, 'CreateProdSubDomain', {
       env: { 
         region: 'us-east-1',
         account: '116907314417' 
@@ -63,8 +65,7 @@ export class PipelineStack extends cdk.Stack {
     },
     {
       stacksettings: {
-        environment: 'prod',
-        hostedZone: undefined
+        environment: 'prod'
       }
     });
     
@@ -78,35 +79,84 @@ export class PipelineStack extends cdk.Stack {
     CreateSubDomains.addApplication(prodapp);
     RunNextActionInParallel(CreateSubDomains);
 
-    const comboAction = new ShellScriptAction({
-      actionName: 'TestInfra',
-      useOutputs: {
-        // Get the stack Output from the Stage and make it available in
-        // the shell script as $ZoneInfo
-        DEV_ZONE_INFO: pipeline.stackOutput(devapp.ZoneInfo),
-        PROD_ZONE_INFO: pipeline.stackOutput(prodapp.ZoneInfo)
-      },
-      commands: [
-        'ls -alR',
-        'env',
-        'echo $DEV_ZONE_INFO $PROD_ZONE_INFO'
-      ]
-    })
+    // {
+    //   "artifactFile": {
+    //     "artifact": {
+    //       "metadata": {},
+    //       "_artifactName": "Artifact_Route53PipelineCreateDevSubDomain1Route53Stackdev1838D203_Outputs"
+    //     },
+    //     "fileName": "outputs.json"
+    //   },
+    //   "outputName": "ZoneNameServers"
+    // }
 
-    CreateSubDomains.addActions(comboAction);
+    const devoutputs = new codepipeline.Artifact(pipeline.stackOutput(devapp.ZoneInfo).artifactFile.artifact.artifactName);
+    const prodoutputs = new codepipeline.Artifact(pipeline.stackOutput(prodapp.ZoneInfo).artifactFile.artifact.artifactName);
+
+    // const websitebucket: BuildEnvironmentVariable = { value: pipeline.stackOutput(prodapp.ZoneInfo).artifactFile.artifact.artifactName  };
+
+    // this is used in stage
+    const CdkBuildProject = new PipelineProject(this, 'CombineOutputs', {
+      
+      buildSpec: BuildSpec.fromObject({
+        version: '0.2',
+        phases: {
+          install: {
+            commands: [
+              'yarn install --frozen-lockfile'
+            ],
+          },
+          build: {
+            commands: [ 
+              'npx cdk synth',
+              'ls' 
+            ]
+          },
+        },
+        artifacts: {
+          'base-directory': 'cdk.out',
+          files: [
+            '**/*',
+          ],
+        },
+      }),
+      environment: {
+        buildImage: LinuxBuildImage.STANDARD_2_0,
+      },
+    });
+  
+
+    const ReBuildCdkAction = new actions.CodeBuildAction({
+      actionName: 'CdkBuild',
+      project: CdkBuildProject,
+      input: sourceArtifact,
+      extraInputs: [ devoutputs, prodoutputs  ], // outputs from deployed stacks
+      outputs: [ cloudAssemblyArtifactUpdated ],
+    });
     
-    pipeline.addApplicationStage(new PipelineStage(this, 'UpdateTLDZoneDelegation', {
+    const RebuildCdk = pipeline.addStage('RebuildCdk');
+    RebuildCdk.addActions(ReBuildCdkAction);
+
+    const UpdateTLDDomain = pipeline.addStage('UpdateTLDDomain');
+    const tldapp = new DelegationStage(this, 'Deploy', {
       env: { 
         region: 'us-east-1',
-        account: '208334959160'
+        account: '208334959160' 
       }
     },
     {
       stacksettings: {
         environment: 'root',
-        hostedZone: pipeline.stackOutput(devapp.ZoneInfo).outputName.toString()
       }
-    }));
+    });
 
+    UpdateTLDDomain.addApplication(tldapp)
+    // overwrite artifact
+    const cfnPipeline = pipeline.codePipeline.node.defaultChild as unknown as CfnPipeline
+    // TemplatePath: Artifact_Build_Synth::assembly-Route53-Pipeline-UpdateTLDDomain/Route53PipelineUpdateTLDDomainRoute53Stackroot8CA1E97B.template.json
+    // 
+    console.log(cfnPipeline)
+    cfnPipeline.addPropertyOverride(`Stages.5.Actions.0.Configuration.TemplatePath`,`Artifact_RebuildCdk_CdkBuild::`+ [ tldapp.artifactId, tldapp.TemplateFile].join('/'))
+  //  cfnPipeline.addPropertyOverride(`Stages.4.Actions.1.Configuration.InputArtifacts.Name`,`Artifact_ExtractNameserver_CdkBuild`)
   }
 }

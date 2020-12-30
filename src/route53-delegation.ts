@@ -1,27 +1,21 @@
 
 import { PublicHostedZone } from '@aws-cdk/aws-route53';
 import { Stack, Construct, Fn, StackProps, CfnOutput } from '@aws-cdk/core';
- 
-export class stackSettings {
-  readonly stacksettings?: {
-    readonly environment?: string
-  }
-}
 
-export class SubdomainsStack extends Stack {
+export class DelegationStack extends Stack {
   public readonly ZoneInfo: CfnOutput;
   
-  constructor(scope: Construct, id: string, props?: StackProps, stackconfig?: stackSettings) {
+  constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
     
     const zone = new PublicHostedZone(this, 'zone', {
-      zoneName: stackconfig?.stacksettings?.environment! + '.naumenko.ca',
-      comment: 'Hosted zone for ' + stackconfig?.stacksettings?.environment!
+      zoneName: 'naumenko.ca',
+      comment: 'Hosted zone'
     });
 
     let cfo = new CfnOutput(this, 'ZoneNameServers', {
       value: 'UNDEFINED',
-      description: 'Delegation record for zone: ' + stackconfig?.stacksettings?.environment 
+      description: 'Delegation record for zone'
     });
 
     if (zone.hostedZoneNameServers) {
@@ -32,4 +26,3 @@ export class SubdomainsStack extends Stack {
     }
   }
 }
-
