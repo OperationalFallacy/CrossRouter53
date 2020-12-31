@@ -107,9 +107,9 @@ export class PipelineStack extends cdk.Stack {
             ],
           },
           build: {
-            commands: [ 
-              'npx cdk synth',
-              'ls' 
+            commands: [
+              'ls -al'
+              'npx cdk synth'
             ]
           },
         },
