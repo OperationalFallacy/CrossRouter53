@@ -43,9 +43,9 @@ export class PipelineStack extends cdk.Stack {
     })
 
     // This is where we add the application stages - it should be branch-based perhaps
-    const CreateSubDomains = pipeline.addStage('CreateSubDomains');
+    const CreateSubDomains = pipeline.addStage('SubDomains');
 
-    const devapp = new SubdomainStage(this, 'CreateDevSubDomain', {
+    const devapp = new SubdomainStage(this, 'CreateDev', {
       env: { 
         region: 'us-east-1',
         account: '164411640669' 
@@ -57,7 +57,7 @@ export class PipelineStack extends cdk.Stack {
       }
     });
 
-    const prodapp = new SubdomainStage(this, 'CreateProdSubDomain', {
+    const prodapp = new SubdomainStage(this, 'CreateProd', {
       env: { 
         region: 'us-east-1',
         account: '116907314417' 
