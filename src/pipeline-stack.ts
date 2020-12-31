@@ -121,7 +121,7 @@ export class PipelineStack extends cdk.Stack {
         },
       }),
       environment: {
-        buildImage: LinuxBuildImage.STANDARD_2_0,
+        buildImage: LinuxBuildImage.STANDARD_4_0,
       },
     });
   
