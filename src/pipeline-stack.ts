@@ -125,7 +125,6 @@ export class PipelineStack extends cdk.Stack {
       },
     });
   
-
     const ReBuildCdkAction = new actions.CodeBuildAction({
       actionName: 'CdkBuild',
       project: CdkBuildProject,
@@ -138,6 +137,7 @@ export class PipelineStack extends cdk.Stack {
     RebuildCdk.addActions(ReBuildCdkAction);
 
     const UpdateTLDDomain = pipeline.addStage('UpdateTLDDomain');
+
     const tldapp = new DelegationStage(this, 'Deploy', {
       env: { 
         region: 'us-east-1',
@@ -153,10 +153,8 @@ export class PipelineStack extends cdk.Stack {
     UpdateTLDDomain.addApplication(tldapp)
     // overwrite artifact
     const cfnPipeline = pipeline.codePipeline.node.defaultChild as unknown as CfnPipeline
-    // TemplatePath: Artifact_Build_Synth::assembly-Route53-Pipeline-UpdateTLDDomain/Route53PipelineUpdateTLDDomainRoute53Stackroot8CA1E97B.template.json
-    // 
-    console.log(cfnPipeline)
+
     cfnPipeline.addPropertyOverride(`Stages.5.Actions.0.Configuration.TemplatePath`,`Artifact_RebuildCdk_CdkBuild::`+ [ tldapp.artifactId, tldapp.TemplateFile].join('/'))
-  //  cfnPipeline.addPropertyOverride(`Stages.4.Actions.1.Configuration.InputArtifacts.Name`,`Artifact_ExtractNameserver_CdkBuild`)
+    cfnPipeline.addPropertyOverride(`Stages.5.Actions.0.Configuration.InputArtifacts.Name`, 'Artifact_RebuildCdk_CdkBuild' ) 
   }
 }
