@@ -155,6 +155,6 @@ export class PipelineStack extends cdk.Stack {
     const cfnPipeline = pipeline.codePipeline.node.defaultChild as unknown as CfnPipeline
 
     cfnPipeline.addPropertyOverride(`Stages.5.Actions.0.Configuration.TemplatePath`,`Artifact_RebuildCdk_CdkBuild::`+ [ tldapp.artifactId, tldapp.TemplateFile].join('/'))
-    cfnPipeline.addPropertyOverride(`Stages.5.Actions.0.Configuration.InputArtifacts.Name`, 'Artifact_RebuildCdk_CdkBuild' ) 
+    cfnPipeline.addPropertyOverride(`Stages.5.Actions.0.InputArtifacts.0.Name`, 'Artifact_RebuildCdk_CdkBuild' ) 
   }
 }
