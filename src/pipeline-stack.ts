@@ -126,11 +126,12 @@ export class PipelineStack extends cdk.Stack {
     });
   
     const ReBuildCdkAction = new actions.CodeBuildAction({
-      actionName: 'CdkBuild',
+      actionName: 'wutCdkBuild123',
       project: CdkBuildProject,
       input: sourceArtifact,
       extraInputs: [ devoutputs, prodoutputs  ], // outputs from deployed stacks
       outputs: [ cloudAssemblyArtifactUpdated ],
+      variablesNamespace: 'test123'
     });
     
     const RebuildCdk = pipeline.addStage('RebuildCdk');
@@ -151,10 +152,12 @@ export class PipelineStack extends cdk.Stack {
     });
 
     UpdateTLDDomain.addApplication(tldapp)
-    // overwrite artifact
+    
+    // overwrite some parts of CF template for properties pipeline package doesn't provide
     const cfnPipeline = pipeline.codePipeline.node.defaultChild as unknown as CfnPipeline
 
-    cfnPipeline.addPropertyOverride(`Stages.5.Actions.0.Configuration.TemplatePath`,`Artifact_RebuildCdk_CdkBuild::`+ [ tldapp.artifactId, tldapp.TemplateFile].join('/'))
-    cfnPipeline.addPropertyOverride(`Stages.5.Actions.0.InputArtifacts.0.Name`, 'Artifact_RebuildCdk_CdkBuild' ) 
+    // Overwrite actions to have var namespace configure
+    cfnPipeline.addPropertyOverride(`Stages.3.Actions.1.Namespace`, [`DNS`, devapp.stageName, devapp.account ].join('_'))
+    cfnPipeline.addPropertyOverride(`Stages.3.Actions.3.Namespace`, [`DNS`, prodapp.stageName, prodapp.account ].join('_'))
   }
 }
