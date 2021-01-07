@@ -4,7 +4,7 @@ import * as actions from '@aws-cdk/aws-codepipeline-actions';
 import * as cdk from '@aws-cdk/core';
 import { CdkPipeline, CdkStage, SimpleSynthAction } from '@aws-cdk/pipelines';
 import { SubdomainStage, DelegationStage } from './app-stages';
-import { PipelineProject, BuildSpec, LinuxBuildImage} from '@aws-cdk/aws-codebuild'
+import { PipelineProject, BuildSpec, LinuxBuildImage, BuildEnvironmentVariableType} from '@aws-cdk/aws-codebuild'
 import { CfnPipeline } from '@aws-cdk/aws-datapipeline'
 
 export interface PipelineStackProps extends cdk.StackProps {
@@ -109,6 +109,7 @@ export class PipelineStack extends cdk.Stack {
           build: {
             commands: [
               'ls -al',
+              'env',
               'npx cdk synth'
             ]
           },
@@ -125,13 +126,18 @@ export class PipelineStack extends cdk.Stack {
       },
     });
   
+    const defaultEnvVariables = {
+      DNS_DEV: { type: BuildEnvironmentVariableType.PLAINTEXT, value: "#{" + [`DNS`, devapp.stageName, devapp.account ].join('_') + ".ZoneNameServers}" },
+      DNS_PROD: { type: BuildEnvironmentVariableType.PLAINTEXT, value: "#{" + [`DNS`, prodapp.stageName, prodapp.account ].join('_') + ".ZoneNameServers}" },
+    };
+
     const ReBuildCdkAction = new actions.CodeBuildAction({
-      actionName: 'wutCdkBuild123',
+      actionName: 'CdkBuild',
       project: CdkBuildProject,
       input: sourceArtifact,
       extraInputs: [ devoutputs, prodoutputs  ], // outputs from deployed stacks
       outputs: [ cloudAssemblyArtifactUpdated ],
-      variablesNamespace: 'test123'
+      environmentVariables: defaultEnvVariables
     });
     
     const RebuildCdk = pipeline.addStage('RebuildCdk');
@@ -152,7 +158,7 @@ export class PipelineStack extends cdk.Stack {
     });
 
     UpdateTLDDomain.addApplication(tldapp)
-    
+
     // overwrite some parts of CF template for properties pipeline package doesn't provide
     const cfnPipeline = pipeline.codePipeline.node.defaultChild as unknown as CfnPipeline
 
