@@ -79,21 +79,8 @@ export class PipelineStack extends cdk.Stack {
     CreateSubDomains.addApplication(prodapp);
     RunNextActionInParallel(CreateSubDomains);
 
-    // {
-    //   "artifactFile": {
-    //     "artifact": {
-    //       "metadata": {},
-    //       "_artifactName": "Artifact_Route53PipelineCreateDevSubDomain1Route53Stackdev1838D203_Outputs"
-    //     },
-    //     "fileName": "outputs.json"
-    //   },
-    //   "outputName": "ZoneNameServers"
-    // }
-
-    const devoutputs = new codepipeline.Artifact(pipeline.stackOutput(devapp.ZoneInfo).artifactFile.artifact.artifactName);
-    const prodoutputs = new codepipeline.Artifact(pipeline.stackOutput(prodapp.ZoneInfo).artifactFile.artifact.artifactName);
-
-    // const websitebucket: BuildEnvironmentVariable = { value: pipeline.stackOutput(prodapp.ZoneInfo).artifactFile.artifact.artifactName  };
+    // const devoutputs = new codepipeline.Artifact(pipeline.stackOutput(devapp.ZoneInfo).artifactFile.artifact.artifactName);
+    // const prodoutputs = new codepipeline.Artifact(pipeline.stackOutput(prodapp.ZoneInfo).artifactFile.artifact.artifactName);
 
     // this is used in stage
     const CdkBuildProject = new PipelineProject(this, 'CombineOutputs', {
@@ -135,7 +122,7 @@ export class PipelineStack extends cdk.Stack {
       actionName: 'CdkBuild',
       project: CdkBuildProject,
       input: sourceArtifact,
-      extraInputs: [ devoutputs, prodoutputs  ], // outputs from deployed stacks
+      // extraInputs: [ devoutputs, prodoutputs  ], // outputs from deployed stacks if needed, but only 5 allowed
       outputs: [ cloudAssemblyArtifactUpdated ],
       environmentVariables: defaultEnvVariables
     });

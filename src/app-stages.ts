@@ -24,12 +24,10 @@ export class SubdomainStage extends Stage {
 }
 
 export class DelegationStage extends Stage {
-  public readonly ZoneInfo: CfnOutput;
   public readonly TemplateFile: string;
 
   constructor(scope: Construct, id: string, props: StageProps, stackconfig: stackSettings) {
     super(scope, id, props);
-
     const service = new DelegationStack(this, 'Tld-' + stackconfig.stacksettings?.environment, {
       env: {
         region : 'us-east-1',
@@ -37,7 +35,6 @@ export class DelegationStage extends Stage {
    }
    );
     // Expose output one level higher
-    this.ZoneInfo = service.ZoneInfo;
     this.TemplateFile = service.templateFile
   }
 }
