@@ -138,11 +138,6 @@ export class PipelineStack extends cdk.Stack {
         region: 'us-east-1',
         account: '208334959160' 
       }
-    },
-    {
-      stacksettings: {
-        environment: 'root',
-      }
     });
 
     UpdateTLDDomain.addApplication(tldapp, {
