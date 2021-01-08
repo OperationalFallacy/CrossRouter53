@@ -153,6 +153,6 @@ export class PipelineStack extends cdk.Stack {
 
     // Overwrite actions for TLD to use artifact from re-build action
     cfnPipeline.addPropertyOverride(`Stages.5.Actions.0.Configuration.TemplatePath`,`Artifact_RebuildCdk_CdkBuild::`+ [ tldapp.artifactId, tldapp.TemplateFile].join('/'))
-    cfnPipeline.addPropertyOverride(`Stages.5.Actions.0.InputArtifacts.0.Name`, 'Artifact_RebuildCdk_CdkBuild' ) 
+    cfnPipeline.addPropertyOverride(`Stages.5.Actions.0.InputArtifacts.Name`, 'Artifact_RebuildCdk_CdkBuild' ) 
   }
 }
