@@ -39,7 +39,7 @@ export class DelegationStack extends Stack {
       console.log('Found NS record: ', record)
       new ZoneDelegationRecord(this, record.domain, {
         zone: zone,
-        recordName: record.domain.toLowerCase(),
+        recordName: record.domain.toLowerCase()+'.naumenko.ca',
         nameServers: record.NS,
         comment: 'Created from cdk for ' + record.domain,
       })
