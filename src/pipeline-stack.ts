@@ -37,7 +37,7 @@ export class PipelineStack extends cdk.Stack {
         sourceArtifact,
         cloudAssemblyArtifact,
         environment: {
-          privileged: true, // so that we can use Docker bundling
+          privileged: true,
         }
       })
     })
@@ -45,7 +45,7 @@ export class PipelineStack extends cdk.Stack {
     // This is where we add the application stages - it should be branch-based perhaps
     const CreateSubDomains = pipeline.addStage('SubDomains');
 
-    const devapp = new SubdomainStage(this, 'Dev', {
+    const devapp = new SubdomainStage(this, 'dev', {
       env: { 
         region: 'us-east-1',
         account: '164411640669' 
@@ -57,7 +57,7 @@ export class PipelineStack extends cdk.Stack {
       }
     });
 
-    const prodapp = new SubdomainStage(this, 'Prod', {
+    const prodapp = new SubdomainStage(this, 'prod', {
       env: { 
         region: 'us-east-1',
         account: '116907314417' 
@@ -79,10 +79,11 @@ export class PipelineStack extends cdk.Stack {
     CreateSubDomains.addApplication(prodapp);
     RunNextActionInParallel(CreateSubDomains);
 
+    // When artifact name is required
     // const devoutputs = new codepipeline.Artifact(pipeline.stackOutput(devapp.ZoneInfo).artifactFile.artifact.artifactName);
     // const prodoutputs = new codepipeline.Artifact(pipeline.stackOutput(prodapp.ZoneInfo).artifactFile.artifact.artifactName);
 
-    // this is used in stage
+    // This is used in the stage
     const CdkBuildProject = new PipelineProject(this, 'CombineOutputs', {
       
       buildSpec: BuildSpec.fromObject({
@@ -116,6 +117,7 @@ export class PipelineStack extends cdk.Stack {
     const defaultEnvVariables = {
       DNS_DEV: { type: BuildEnvironmentVariableType.PLAINTEXT, value: "#{" + [`DNS`, devapp.stageName, devapp.account ].join('_') + ".ZoneNameServers}" },
       DNS_PROD: { type: BuildEnvironmentVariableType.PLAINTEXT, value: "#{" + [`DNS`, prodapp.stageName, prodapp.account ].join('_') + ".ZoneNameServers}" },
+      // Add more, DNS_XXX where XXX is another subdomain
     };
 
     const ReBuildCdkAction = new actions.CodeBuildAction({
@@ -153,6 +155,7 @@ export class PipelineStack extends cdk.Stack {
 
     // Overwrite actions for TLD to use artifact from re-build action
     cfnPipeline.addPropertyOverride(`Stages.5.Actions.1.Configuration.TemplatePath`,`Artifact_RebuildCdk_CdkBuild::`+ [ tldapp.artifactId, tldapp.TemplateFile].join('/'))
+    
     cfnPipeline.addPropertyOverride(`Stages.5.Actions.1.InputArtifacts.0.Name`, 'Artifact_RebuildCdk_CdkBuild' )
 
   }

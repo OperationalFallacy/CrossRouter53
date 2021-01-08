@@ -10,7 +10,7 @@ export class SubdomainStage extends Stage {
   constructor(scope: Construct, id: string, props: StageProps, stackconfig: stackSettings) {
     super(scope, id, props);
 
-    const service = new SubdomainsStack(this, 'Subdomain', {
+    const service = new SubdomainsStack(this, 'naumenko-ca', {
       env: {
         region : 'us-east-1',
       }
@@ -28,7 +28,7 @@ export class DelegationStage extends Stage {
 
   constructor(scope: Construct, id: string, props: StageProps) {
     super(scope, id, props);
-    const service = new DelegationStack(this, 'Tld', {
+    const service = new DelegationStack(this, 'naumenko-ca', {
       env: {
         region : 'us-east-1',
       }
