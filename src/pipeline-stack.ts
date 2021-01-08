@@ -144,7 +144,9 @@ export class PipelineStack extends cdk.Stack {
       }
     });
 
-    UpdateTLDDomain.addApplication(tldapp)
+    UpdateTLDDomain.addApplication(tldapp, {
+      manualApprovals: true
+    })
 
     // overwrite some parts of CF template for properties pipeline package doesn't provide
     const cfnPipeline = pipeline.codePipeline.node.defaultChild as unknown as CfnPipeline
