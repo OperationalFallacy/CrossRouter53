@@ -30,9 +30,8 @@ export class DelegationStack extends Stack {
     super(scope, id, props);
 
 
-    const zone = new PublicHostedZone(this, 'zone', {
-      zoneName: 'naumenko.ca',
-      comment: 'Hosted zone managed by CDK'
+    const zone = PublicHostedZone.fromLookup(this, 'zone', {
+      domainName: "naumenko.ca"
     });
 
     // read nameservers from env variables, named DNS_NS_DEV, DNS_NS_XXX where xxx is the subdomain name 
