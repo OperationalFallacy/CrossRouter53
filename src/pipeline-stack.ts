@@ -150,5 +150,9 @@ export class PipelineStack extends cdk.Stack {
     // Overwrite actions to have var namespace configure
     cfnPipeline.addPropertyOverride(`Stages.3.Actions.1.Namespace`, [`DNS`, devapp.stageName, devapp.account ].join('_'))
     cfnPipeline.addPropertyOverride(`Stages.3.Actions.3.Namespace`, [`DNS`, prodapp.stageName, prodapp.account ].join('_'))
+
+    // Overwrite actions for TLD to use artifact from re-build action
+    cfnPipeline.addPropertyOverride(`Stages.5.Actions.0.Configuration.TemplatePath`,`Artifact_RebuildCdk_CdkBuild::`+ [ tldapp.artifactId, tldapp.TemplateFile].join('/'))
+    cfnPipeline.addPropertyOverride(`Stages.5.Actions.0.InputArtifacts.0.Name`, 'Artifact_RebuildCdk_CdkBuild' ) 
   }
 }
