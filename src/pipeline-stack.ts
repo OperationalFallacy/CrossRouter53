@@ -130,9 +130,10 @@ export class PipelineStack extends cdk.Stack {
     const RebuildCdk = pipeline.addStage('RebuildCdk');
     RebuildCdk.addActions(ReBuildCdkAction);
 
-    const UpdateTLDDomain = pipeline.addStage('UpdateTLDDomain');
+    const UpdateTLDDomain = pipeline.addStage('DeployDelegationForSubdomains');
 
-    const tldapp = new DelegationStage(this, 'Deploy', {
+    // stage named as Update-Tld(DelegationStack)-root(environment)
+    const tldapp = new DelegationStage(this, 'Delegation', {
       env: { 
         region: 'us-east-1',
         account: '208334959160' 
