@@ -1,0 +1,70 @@
+AWSTemplateFormatVersion: '2010-09-09-OC'
+Description: default template generated for organization with master account 208334959160
+
+Organization:
+  
+  # apex zone, naumenko.ca
+  MasterAccount:
+    Type: OC::ORG::MasterAccount
+    Properties:
+      AccountName: Roman Naumenko
+      AccountId: '208334959160'
+      RootEmail: roman.naumenko@bestroman.com
+      Alias: portalocean
+
+  OrganizationRoot:
+    Type: OC::ORG::OrganizationRoot
+    Properties:
+      DefaultOrganizationAccessRoleName: OrganizationAccountAccessRole
+  
+  # Delegated zone here, dev.naumenko.ca
+  DevAccount:
+    Type: OC::ORG::Account
+    Properties:
+      RootEmail: roman+devacct@naumenko.ca
+      AccountName: Application dev account
+      Tags:
+        budget-alarm-threshold: '5'
+        account-owner-email: a+devacct@naumenko.ca
+
+  # Another zone here, prod.naumenko.ca
+  ProdAccount:
+    Type: OC::ORG::Account
+    Properties:
+      RootEmail: roman+prdacct@naumenko.ca
+      AccountName: Application prod account
+      Tags:
+        budget-alarm-threshold: '5'
+        account-owner-email: a+prdacct@naumenko.ca
+
+  # Run CDK pipeline here
+  DeploymentsAccount:
+    Type: OC::ORG::Account
+    Properties:
+      RootEmail: roman+deploy@naumenko.ca
+      AccountName: CICD account
+      Tags:
+        budget-alarm-threshold: '5'
+        account-owner-email: a+deploy@naumenko.ca
+
+  RestrictUnusedRegionsSCP:
+    Type: OC::ORG::ServiceControlPolicy
+    Properties:
+      PolicyName: RestrictUnusedRegions
+      Description: Restrict Unused regions
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: DenyUnsupportedRegions
+            Effect: Deny
+            NotAction:
+              - 'cloudfront:*'
+              - 'iam:*'
+              - 'route53:*'
+              - 'support:*'
+            Resource: '*'
+            Condition:
+              StringNotEquals:
+                'aws:RequestedRegion':
+                  - eu-west-2
+                  - us-east-1
