@@ -30,7 +30,7 @@ export class PipelineStack extends cdk.Stack {
         trigger: actions.GitHubTrigger.WEBHOOK,
         owner: 'OperationalFallacy',
         repo: 'CrossRouter53',
-        branch: 'delegated_zone',
+        branch: 'feature/readme',
       }),
 
       synthAction: SimpleSynthAction.standardYarnSynth({
