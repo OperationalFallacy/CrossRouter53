@@ -24,8 +24,16 @@ export class SubdomainsStack extends Stack {
       description: 'Delegation record for zone: ' + stackconfig?.stacksettings?.environment 
     });
 
+    let zoneId = new CfnOutput(this, 'DefaultZoneId', {
+      value: 'UNDEFINED',
+      description: 'Route53 Zone Id for account default domain: ' + stackconfig?.stacksettings?.environment + '.naumenko.ca',
+      exportName: 'DefaultZoneId'
+    });
+
+
     if (zone.hostedZoneNameServers) {
       cfo.value = Fn.join(',', zone.hostedZoneNameServers)
+      zoneId.value = zone.hostedZoneId
       this.ZoneInfo = cfo
     } else {
       this.ZoneInfo = cfo
