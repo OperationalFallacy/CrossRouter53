@@ -26,7 +26,8 @@ export class SubdomainsStack extends Stack {
 
     let zoneId = new CfnOutput(this, 'DefaultZoneId', {
       value: 'UNDEFINED',
-      description: 'Route53 Zone Id for account default domain: ' + stackconfig?.stacksettings?.environment + '.naumenko.ca'
+      description: 'Route53 Zone Id for account default domain: ' + stackconfig?.stacksettings?.environment + '.naumenko.ca',
+      exportName: 'DefaultZoneId'
     });
 
 
