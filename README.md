@@ -80,34 +80,32 @@ dig +trace dev.naumenko.ca
 
 ; <<>> DiG 9.10.6 <<>> +trace dev.naumenko.ca
 ;; global options: +cmd
-.			517300	IN	NS	a.root-servers.net.
-.			517300	IN	NS	b.root-servers.net.
-.			517300	IN	NS	c.root-servers.net.
-.			517300	IN	NS	d.root-servers.net.
+.			517507	IN	NS	a.root-servers.net.
 ...
-.			517300	IN	NS	m.root-servers.net.
-.			517300	IN	RRSIG	NS 8 0 518400 20210121050000 20210108040000 42351 . 
-...
+.			517507	IN	NS	m.root-servers.net.
+;; Received 525 bytes from 192.168.105.250#53(192.168.105.250) in 15 ms
 
+ca.			172800	IN	NS	c.ca-servers.ca.
+ca.			172800	IN	NS	j.ca-servers.ca.
+ca.			172800	IN	NS	x.ca-servers.ca.
 ca.			172800	IN	NS	any.ca-servers.ca.
-ca.			86400	IN	DS	2134 8 2 4B8475C0C0FE2AFDFEE1A71A237C91059098D12FC18265B290EDB238 A5F63582
-...
+;; Received 632 bytes from 192.112.36.4#53(g.root-servers.net) in 46 ms
 
+naumenko.ca.		86400	IN	NS	ns-1481.awsdns-57.org.
 naumenko.ca.		86400	IN	NS	ns-241.awsdns-30.com.
 naumenko.ca.		86400	IN	NS	ns-776.awsdns-33.net.
-naumenko.ca.		86400	IN	NS	ns-1481.awsdns-57.org.
 naumenko.ca.		86400	IN	NS	ns-1913.awsdns-47.co.uk.
-t8k75i4tj36jf102o518ir5q4l99kmqm.ca. 3600 IN NSEC3 1 1 5 - T8M1UC6TIL2UFI0RBGM0I9U6PO9HL5UU  NS SOA RRSIG DNSKEY NSEC3PARAM
-...
 
-dev.naumenko.ca.	172800	IN	NS	ns-1230.awsdns-25.org.
-dev.naumenko.ca.	172800	IN	NS	ns-1751.awsdns-26.co.uk.
-dev.naumenko.ca.	172800	IN	NS	ns-185.awsdns-23.com.
-dev.naumenko.ca.	172800	IN	NS	ns-891.awsdns-47.net.
-;; Received 184 bytes from 205.251.199.121#53(ns-1913.awsdns-47.co.uk) in 18 ms
+;; Received 669 bytes from 185.159.196.2#53(c.ca-servers.ca) in 18 ms
 
-dev.naumenko.ca.	900	IN	SOA	*ns-1230.awsdns-25.org.* awsdns-hostmaster.amazon.com. 1 7200 900 1209600 86400
-;; Received 129 bytes from 205.251.198.215#53(ns-1751.awsdns-26.co.uk) in 18 ms
+dev.naumenko.ca.	172800	IN	NS	ns-1347.awsdns-40.org.
+dev.naumenko.ca.	172800	IN	NS	ns-1668.awsdns-16.co.uk.
+dev.naumenko.ca.	172800	IN	NS	ns-304.awsdns-38.com.
+dev.naumenko.ca.	172800	IN	NS	ns-572.awsdns-07.net.
+;; Received 184 bytes from 205.251.199.121#53(ns-1913.awsdns-47.co.uk) in 13 ms
+
+dev.naumenko.ca.	900	IN	SOA	ns-1347.awsdns-40.org. awsdns-hostmaster.amazon.com. 1 7200 900 1209600 86400
+;; Received 129 bytes from 205.251.198.132#53(ns-1668.awsdns-16.co.uk) in 14 ms
 ```
 
 # Deploy sample app
